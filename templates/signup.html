@@ -1,95 +1,154 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Signup - AI Career Guidance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: url('https://img.freepik.com/premium-photo/abstract-blurred-office-blur-background-generative-ai_874904-44826.jpg') no-repeat center center fixed;
-            background-size: cover;
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(circle at top left, rgba(99, 102, 241, 0.3), transparent),
+                radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.3), transparent);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 20px;
         }
-        .container {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-            width: 350px;
+
+        .signup-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+        }
+
+        .signup-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.8);
+        }
+
+        .signup-card h2 {
+            color: white;
+            font-weight: 600;
+            font-size: 28px;
+            margin-bottom: 25px;
             text-align: center;
         }
-        .container h2 {
-            color: #333;
-        }
-        .container input {
+
+        .signup-card input {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .container button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #28a745, #218838);
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
             color: white;
+            font-size: 15px;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        .signup-card input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .signup-card input:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.8);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .signup-card button {
+            width: 100%;
+            padding: 14px;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            color: white;
+            font-weight: 600;
             font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+            transition: all 0.3s ease;
         }
-        .container button:hover {
-            background: linear-gradient(135deg, #218838, #1c7430);
+
+        .signup-card button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.6);
         }
+
         .login-link {
             display: block;
-            margin-top: 15px;
+            margin-top: 20px;
             font-size: 14px;
-            color: #007BFF;
+            color: rgba(255, 255, 255, 0.85);
+            text-align: center;
             text-decoration: none;
         }
+
         .login-link:hover {
-            text-decoration: underline;
+            color: #f9a8d4;
         }
+
         .error-message {
-            color: red;
+            background-color: rgba(248, 113, 113, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            padding: 10px 14px;
             font-size: 14px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .signup-card {
+                width: 100%;
+                padding: 30px;
+            }
         }
     </style>
 </head>
+
 <body>
-    
-    <div class="container">
+    <div class="signup-card">
         <h2>Create an Account</h2>
         <form action="/register" method="POST">
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-            <input type="number" name="Age" placeholder="Age" required>
-            <input type="text" name="Gender" placeholder="Gender" required>
+            <input type="email" name="email" placeholder="Email" required />
+            <input type="password" name="password" placeholder="Password" required />
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required />
+            <input type="number" name="age" placeholder="Age" required />
+            <input list="genders" name="gender" placeholder="Gender" required />
+            <datalist id="genders">
+                <option value="Nam">
+                <option value="Nữ">
+            </datalist>
             <button type="submit">Sign Up</button>
         </form>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <p style="color: red;">{{ message }}</p>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-    <!-- <form action="/register" method="POST">
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-        <button type="submit">Sign Up</button>
-    </form> -->
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <p class="error-message">{{ message }}</p>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <a href="{{ url_for('login_page') }}" class="login-link">Already have an account? Log in</a>
+    </div>
 </body>
+
 </html>
