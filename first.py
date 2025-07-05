@@ -149,31 +149,60 @@ def initialize_yosker_chat():
     profile = get_student_profile_from_json()
     if not profile:
         profile = "No student data available."
- 
+
     initial_prompt = f"""
 You are MentorMind, a friendly and knowledgeable AI career counselor.
- 
-Start by analyzing the following student profile and predict the most suitable stream:
- {profile}
- 
- Explain why this stream is suitable based on their marks, interests, and preferences in as short as possible.
- Then continue with this structured flow:
- 1. Confirm the student's details and ask any missing ones.
- 2. Ask if they agree with the suggested stream.
- 3. List 7 top career options in that stream (short bullets).
- 4. Ask which career they are interested in.
- 5. Provide step-by-step guidance for that career.
- 6. End with helpful suggestions and offer to connect with institutions if they wish.
- NOTE : make sure the response is not big and user friendly and a pragraph 
- """
- 
+
+Analyze the following student profile and return your response in this EXACT JSON format:
+{profile}
+
+Return ONLY this JSON structure, no additional text:
+{{
+    "student_analysis": {{
+        "name": "extracted from profile or 'Student'",
+        "recommended_stream": "most suitable academic stream",
+        "stream_reasoning": "brief explanation why this stream suits them",
+        "confidence_score": 85
+    }},
+    "career_options": [
+        {{
+            "career_title": "Career Option 1",
+            "match_percentage": 90,
+            "required_skills": ["skill1", "skill2", "skill3"],
+            "salary_range": "expected salary range",
+            "growth_prospects": "brief growth outlook"
+        }},
+        {{
+            "career_title": "Career Option 2", 
+            "match_percentage": 85,
+            "required_skills": ["skill1", "skill2"],
+            "salary_range": "expected salary range",
+            "growth_prospects": "brief growth outlook"
+        }}
+    ],
+    "next_steps": {{
+        "immediate_actions": ["action1", "action2"],
+        "educational_requirements": ["requirement1", "requirement2"],
+        "recommended_institutions": ["institution1", "institution2"]
+    }},
+    "questions_for_student": ["question1", "question2"]
+}}
+
+IMPORTANT: Return ONLY valid JSON. No markdown formatting or additional text.
+"""
+
     return model.start_chat(history=[{"role": "user", "parts": [initial_prompt]}])
- 
+
+
 def get_user_response(user_input):
     global chat_session
     if chat_session is None:
         chat_session = initialize_yosker_chat()
-    response = chat_session.send_message(user_input)
+
+    # Add JSON instruction to maintain format
+    formatted_input = f"{user_input}\n\nPlease respond in the same JSON format as specified."
+
+    response = chat_session.send_message(formatted_input)
     return response.text.strip()
  
 @app.route("/talk", methods=["GET", "POST"])
@@ -207,29 +236,36 @@ def reset_chat():
  
 EMAIL_SENDER = os.getenv("EMAIL_SENDER")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
- 
+
+
 def generate_email_content(student_data):
-     profile = "\n".join([f"{key}: {value}" for key, value in student_data.items()])
-     prompt = f"""
- Hi {student_data.get('name', 'Student')},
- 
- Warm greetings from MentorMind! This is MentorMind, your personalized AI career guidance assistant.
- 
- Your aspiration is inspiring! Based on your profile, here's a recommended path:
- {profile}
- Please explore the suggested path and feel free to reach out if you'd like to connect with experts in this field.
- 
- Best wishes,  
-MentorMind | AI Career Assistant
- """
-     try:
-         response = model.generate_content(prompt)
-         return response.text.strip() if response.text else "Explore your future with us!"
-     except Exception as e:
-         print(f"AI Error: {e}")
-         return "Explore your future with us!"
- 
- 
+    profile = "\n".join([f"{key}: {value}" for key, value in student_data.items()])
+    prompt = f"""
+Generate a personalized career guidance email for this student:
+{profile}
+
+Return your response in this EXACT JSON format:
+{{
+    "email_subject": "personalized subject line",
+    "email_body": "complete email content with career recommendations",
+    "key_recommendations": ["recommendation1", "recommendation2"],
+    "next_steps": ["step1", "step2"],
+    "student_name": "{student_data.get('name', 'Student')}",
+    "recommended_stream": "suggested academic stream",
+    "career_options": ["career1", "career2", "career3"]
+}}
+
+Return ONLY valid JSON. No additional text or formatting.
+"""
+
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip() if response.text else '{{"error": "No response generated"}}'
+    except Exception as e:
+        print(f"AI Error: {e}")
+        return '{{"error": "AI service unavailable"}}'
+
+
 def send_email(to_email, subject, body):
      try:
          msg = MIMEMultipart()
@@ -246,38 +282,39 @@ def send_email(to_email, subject, body):
          print(f"✅ Email sent to {to_email}")
      except Exception as e:
          print(f"❌ Error sending email: {e}")
- 
+
 @app.route('/send_email', methods=['POST'])
 def send_email_route():
      try:
          if 'user' not in session:
              return jsonify({"error": "User not logged in"}), 401
- 
+
          data = request.get_json()
          to_email = data.get("email")
- 
+
          if not to_email:
              return jsonify({"error": "Email is required"}), 400
- 
+
          # Use logged-in user's personalized data file
          user_email = session['user']
          filename = f"career_data_{user_email.replace('@', '_at_')}.json"
          file_path = os.path.join(DATA_FOLDER, filename)
- 
+
          if not os.path.exists(file_path):
              return jsonify({"error": "No career data found for this user. Please submit your form first."}), 400
- 
+
          with open(file_path, 'r') as json_file:
              student_data = json.load(json_file)
- 
+
          subject = "Your Personalized Career Guidance"
          body = generate_email_content(student_data)
-         send_email(to_email, subject, body)
- 
-         return jsonify({"message": f"Email sent to {to_email}"})
+         clean_response = body.replace('```json\n', '').replace('\n```', '')
+         parsed_data = json.loads(clean_response)
+
+         return jsonify(parsed_data)
      except Exception as e:
          return jsonify({"error": str(e)}), 500
- 
+
  
  
 if __name__ == '__main__':
